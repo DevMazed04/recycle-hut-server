@@ -9,19 +9,31 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
+//database connection
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.vfwjfcr.mongodb.net/?retryWrites=true&w=majority`;
-
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-client.connect(err => {
-   const collection = client.db("test").collection("devices");
-   // perform actions on the collection object
-   client.close();
-});
 
 
 app.get("/", (req, res) => {
    res.send("Recycle Hut API is running");
 });
+
+
+const run = async () => {
+   try {
+      const serviceCollection = client.db("recycleHut").collection("categories");
+
+      app.get('/categories', async (req, res) => {
+         const query = {};
+         const cursor = serviceCollection.find(query);
+         const services = await cursor.toArray();
+         res.send(services);
+      })
+   }
+   finally {
+   }
+};
+run().catch((err) => console.log(err));
 
 app.listen(port, () => {
    console.log("Recycle Hut server is running on port", port);
