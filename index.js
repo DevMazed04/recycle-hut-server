@@ -21,13 +21,13 @@ app.get("/", (req, res) => {
 
 const run = async () => {
    try {
-      const serviceCollection = client.db("recycleHut").collection("categories");
+      const categoryCollection = client.db("recycleHut").collection("categories");
 
       app.get('/categories', async (req, res) => {
          const query = {};
-         const cursor = serviceCollection.find(query);
-         const services = await cursor.toArray();
-         res.send(services);
+         const cursor = categoryCollection.find(query);
+         const categories = await cursor.toArray();
+         res.send(categories);
       })
    }
    finally {
