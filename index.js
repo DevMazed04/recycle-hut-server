@@ -18,18 +18,23 @@ app.get("/", (req, res) => {
   res.send("Recycle Hut API is running");
 });
 
-
 const run = async () => {
   try {
     const categoryCollection = client.db("recycleHut").collection("categories");
-    const featurePhoneCollection = client.db("recycleHut").collection("featurePhones");
-    const androidPhoneCollection = client.db("recycleHut").collection("androidPhones");
+    const productCollection = client.db("recycleHut").collection("products");
+    const userCollection = client.db("recycleHut").collection("users");
     const bookingCollection = client.db("recycleHut").collection("bookings");
 
     app.get('/categories', async (req, res) => {
       const query = {};
       const categories = await categoryCollection.find(query).toArray();
       res.send(categories);
+    })
+
+    app.get('/product-category', async (req, res) => {
+      const query = {}
+      const result = await androidPhoneCollection.find(query).project({ name: 1 }).toArray();
+      res.send(result);
     })
 
     app.get('/category/:id', async (req, res) => {
@@ -39,27 +44,19 @@ const run = async () => {
       res.send(category);
     });
 
-
-    app.get('/androidPhones', async (req, res) => {
+    // Bookings API
+    app.get('/bookings', async (req, res) => {
       const query = {};
-      const androidPhones = await androidPhoneCollection.find(query).toArray();
-      res.send(androidPhones);
-    });
-
-    app.get('/androidPhone/:id', async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const androidPhone = await androidPhoneCollection.findOne(query);
-      res.send(androidPhone);
-    });
+      const bookings = await bookingCollection.find(query).toArray();
+      res.send(bookings);
+    })
 
     app.post('/bookings', async (req, res) => {
       const booking = req.body;
-      console.log(booking);
-      const query = {
+      const query =
+      {
         mobileName: booking.mobileName,
-        email: booking.email,
-        treatment: booking.treatment
+        buyerEmail: booking.buyerEmail,
       }
 
       const alreadyBooked = await bookingCollection.find(query).toArray();
@@ -72,6 +69,35 @@ const run = async () => {
       const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
+
+
+
+    //Products API
+    app.get('/products', async (req, res) => {
+      const query = {};
+      const products = await productCollection.find(query).toArray();
+      res.send(products);
+    })
+
+    app.get('/products/:category', async (req, res) => {
+      const category = req.params.category;
+      const query = { category };
+      const result = await productCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post('/products', async (req, res) => {
+      const product = req.body;
+      const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
+
+    app.delete('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await productCollection.deleteOne(filter);
+      res.send(result);
+    })
 
   }
   finally {
