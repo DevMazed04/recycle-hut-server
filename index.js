@@ -29,6 +29,7 @@ const run = async () => {
     const productCollection = client.db("recycleHut").collection("products");
     const userCollection = client.db("recycleHut").collection("users");
     const bookingCollection = client.db("recycleHut").collection("bookings");
+    const reportedItemCollection = client.db("recycleHut").collection("reportedItems");
 
     // Categories API
     app.get("/categories", async (req, res) => {
@@ -142,6 +143,23 @@ const run = async () => {
       res.send({ isSeller: user?.role === "seller" });
     });
 
+    app.put("/users/seller/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          verifyStatus: "verified",
+        },
+      };
+      const result = await userCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
 
     // Admin API
     app.get("/users/admin/:email", async (req, res) => {
@@ -167,6 +185,27 @@ const run = async () => {
       );
       res.send(result);
     });
+
+    // Reported Items API
+    app.get("/reported-items", async (req, res) => {
+      const query = {};
+      const reportedItems = await reportedItemCollection.find(query).toArray();
+      res.send(reportedItems);
+    });
+
+    app.post("/reported-items", async (req, res) => {
+      const reportedItem = req.body;
+      const result = await reportedItemCollection.insertOne(reportedItem);
+      res.send(result);
+    });
+
+    app.delete("/reported-items/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await reportedItemCollection.deleteOne(filter);
+      res.send(result);
+    });
+
   } finally {
   }
 };
