@@ -195,6 +195,17 @@ const run = async () => {
 
     app.post("/reported-items", async (req, res) => {
       const reportedItem = req.body;
+      const query = {
+        productName: reportedItem.productName,
+      };
+
+      const alreadyReported = await reportedItemCollection.find(query).toArray();
+
+      if (alreadyReported.length) {
+        const message = `${reportedItem.productName} is already Reported`;
+        return res.send({ acknowledged: false, message });
+      }
+
       const result = await reportedItemCollection.insertOne(reportedItem);
       res.send(result);
     });
